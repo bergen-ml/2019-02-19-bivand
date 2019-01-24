@@ -1,0 +1,52 @@
+---
+title: "Applied spatial data analysis with R: status and prospects"
+author: "Roger Bivand"
+date: "19 February 2019"
+output: 
+  beamer_presentation:
+    theme: metropolis
+    pandoc_args: [
+      '--pdf-engine=xelatex'
+    ]
+    highlight: pygments
+    includes:
+      in_header: header.tex
+    keep_tex: true
+classoption: "aspectratio=169"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+```{r size, echo=FALSE, results='hide'}
+knitr::knit_hooks$set(mysize = function(before, options, envir) {
+  if (before) 
+    return(options$size)
+})
+knitr::opts_chunk$set(prompt=TRUE)
+suppressMessages(library(extrafont))
+suppressMessages(loadfonts())
+```
+
+```{r set-options, echo=FALSE, results='hide'}
+options(width = 50)
+```
+
+# Introduction
+
+## Outline
+
+- Spatial and spatio-temporal data are characterised by structures that distinguish them from typical tabular data
+
+- The geometric structures also have spatial reference system information, and can adhere to standards, which may ease geometrical operations
+
+- Satellite data and numerical model output data typically have regular grid structures, but these are often domain-specific
+
+- Computationally intensive tasks include interpolation, upsampling, focal operations, change of support and handling vector data with very detailed boundaries, as well as modelling using Bayesian inference
+
+- A further challenge to modelling using training sets with spatial data is how to split the observations in the presence of spatial dependence
+
+
+
+[comment]: \nobibliography{bml19}
