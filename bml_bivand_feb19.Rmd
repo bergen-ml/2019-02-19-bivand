@@ -47,6 +47,43 @@ options(width = 50)
 
 - A further challenge to modelling using training sets with spatial data is how to split the observations in the presence of spatial dependence
 
+# Spatial and spatio-temporal data
+
+## Spatial data
+
+## Vector data
+
+## Raster data
+
+## Spatio-temporal data
+
+## Representing spatial vector data in R (**sp**)
+
+## Representing spatial vector data in R (**sf**)
+
+## Representing spatial raster data in R (**sp** and **raster**)
+
+## Representing spatial raster data in R (**sf** and **stars**)
+
+
+# Spatial reference systems
+
+## Baseline WKT and PROJ4
+
+## Escaping the WGS84 hub: PROJ4 6.0 and WKT2
+
+# Earth observation
+
+## Volume and frequency
+
+## Array storage
+
+## Cloud storage
+
+# Computationally intensive tasks
+
+# Spatial dependence and subsetting data
+
 
 
 [comment]: \nobibliography{bml19}
