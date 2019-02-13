@@ -51,7 +51,58 @@ options(width = 50)
 
 ## Spatial data
 
+\begincols
+\begincol{0.48\textwidth}
+
+Spatial data typically combine position data in 2D (or 3D), attribute data and metadata related to the position data. Much spatial data could be called map data. We collect and handle much more position data since global navigation satellite system (GNSS) like GPS came on stream 20 years ago, earth observation satellites have been providing data for longer. 
+
+\endcol
+\begincol{0.48\textwidth}
+
+```{r, echo = TRUE, mysize=TRUE, size='\\tiny'}
+library(osmdata)
+library(sf)
+bbox <- opq(bbox = 'bergen norway')
+byb0 <- osmdata_sf(add_osm_feature(bbox, key = 'railway',
+  value = 'light_rail'))$osm_lines
+tram <- osmdata_sf(add_osm_feature(bbox, key = 'railway',
+  value = 'tram'))$osm_lines
+byb1 <- tram[!is.na(tram$name),]
+o <- intersect(names(byb0), names(byb1))
+byb <- rbind(byb0[,o], byb1[,o])
+```
+```{r, echo = TRUE, eval=FALSE, mysize=TRUE, size='\\tiny'}
+library(mapview)
+mapview(byb)
+```
+
+
+```{r plot1, mysize=TRUE, size='\\tiny', fig.show='hide', fig.height=4, fig.width=8, dev.args=list(family="Fira Sans")}
+## library(mapview)
+## mapview(byb)
+## \includegraphics[width=0.95\textwidth]{bml_bivand_feb19_files/figure-beamer/plot1-1.pdf}
+```
+
+
+\endcol
+\endcols
+
 ## Vector data
+
+\begincols
+\begincol{0.48\textwidth}
+
+
+
+\endcol
+\begincol{0.48\textwidth}
+
+```{r, echo = TRUE, mysize=TRUE, size='\\tiny'}
+strwrap(st_as_text(st_geometry(byb)[[1]]))
+```
+
+\endcol
+\endcols
 
 ## Raster data
 
