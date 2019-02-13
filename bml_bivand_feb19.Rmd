@@ -51,11 +51,61 @@ options(width = 50)
 
 ## Spatial data
 
+\begincols
+\begincol{0.48\textwidth}
+
+\endcol
+
+\begincol{0.48\textwidth}
+```{r , echo = FALSE, eval=TRUE, mysize=TRUE, size='\\tiny', cache=TRUE, warning=FALSE, results="hide"}
+```
+
+```{r, fig1, fig.show='hide', fig.height=5, fig.width=12, dev.args=list(family="Fira Sans", bg="transparent"), warning=FALSE}
+```
+\includegraphics[width=0.95\textwidth]{bml_bivand_feb19_files/figure-beamer/fig1-1.pdf}
+
+\endcol
+\endcols
+
+
 ## Vector data
+
+\begincols
+\begincol{0.48\textwidth}
+
+\endcol
+
+\begincol{0.48\textwidth}
+
+\endcol
+\endcols
+
 
 ## Raster data
 
+\begincols
+\begincol{0.48\textwidth}
+
+\endcol
+
+\begincol{0.48\textwidth}
+
+\endcol
+\endcols
+
+
 ## Spatio-temporal data
+
+\begincols
+\begincol{0.48\textwidth}
+
+\endcol
+
+\begincol{0.48\textwidth}
+
+\endcol
+\endcols
+
 
 ## Representing spatial vector data in R (**sp**)
 
@@ -70,19 +120,159 @@ options(width = 50)
 
 ## Baseline WKT and PROJ4
 
+\begincols
+\begincol{0.48\textwidth}
+
+\endcol
+
+\begincol{0.48\textwidth}
+
+\endcol
+\endcols
+
+
 ## Escaping the WGS84 hub: PROJ4 6.0 and WKT2
+
+\begincols
+\begincol{0.48\textwidth}
+
+\endcol
+
+\begincol{0.48\textwidth}
+
+\endcol
+\endcols
+
+
 
 # Earth observation
 
 ## Volume and frequency
 
+\begincols
+\begincol{0.48\textwidth}
+
+\endcol
+
+\begincol{0.48\textwidth}
+
+\endcol
+\endcols
+
+
 ## Array storage
+
+\begincols
+\begincol{0.48\textwidth}
+
+\endcol
+
+\begincol{0.48\textwidth}
+
+\endcol
+\endcols
+
 
 ## Cloud storage
 
+\begincols
+\begincol{0.48\textwidth}
+
+\endcol
+
+\begincol{0.48\textwidth}
+
+\endcol
+\endcols
+
+
+
 # Computationally intensive tasks
 
+## Data handling
+
+\begincols
+\begincol{0.48\textwidth}
+
+\endcol
+
+\begincol{0.48\textwidth}
+
+\endcol
+\endcols
+
+
+## Interpolation
+
+\begincols
+\begincol{0.48\textwidth}
+
+\endcol
+
+\begincol{0.48\textwidth}
+
+\endcol
+\endcols
+
+
+## Inference
+
+## Inference under heterogeneity
+
+\begincols
+\begincol{0.48\textwidth}
+
+\endcol
+
+\begincol{0.48\textwidth}
+
+\endcol
+\endcols
+
+
+## Inference under dependence
+
+\begincols
+\begincol{0.48\textwidth}
+
+\endcol
+
+\begincol{0.48\textwidth}
+
+\endcol
+\endcols
+
+
+
 # Spatial dependence and subsetting data
+
+## Heterogeneity and dependence
+
+
+\begincols
+\begincol{0.48\textwidth}
+
+\endcol
+
+\begincol{0.48\textwidth}
+
+\endcol
+\endcols
+
+
+# Conclusions
+
+## Conclusions
+
+\begincols
+\begincol{0.48\textwidth}
+
+\endcol
+
+\begincol{0.48\textwidth}
+
+\endcol
+\endcols
 
 
 
