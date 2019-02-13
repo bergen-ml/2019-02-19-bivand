@@ -54,7 +54,7 @@ options(width = 50)
 \begincols
 \begincol{0.48\textwidth}
 
-Spatial data typically combine position data in 2D (or 3D), attribute data and metadata related to the position data. Much spatial data could be called map data. We collect and handle much more position data since global navigation satellite system (GNSS) like GPS came on stream 20 years ago, earth observation satellites have been providing data for longer. 
+Spatial data typically combine position data in 2D (or 3D), attribute data and metadata related to the position data. Much spatial data could be called map data or GIS data. We collect and handle much more position data since global navigation satellite system (GNSS) like GPS came on stream 20 years ago, earth observation satellites have been providing data for longer. 
 
 \endcol
 \begincol{0.48\textwidth}
@@ -91,12 +91,14 @@ mapview(byb)
 \begincols
 \begincol{0.48\textwidth}
 
+Spatial vector data is based on points, from which other geometries are constructed. The light rail tracks are 2D vector data. The points themselves are stored as double precision floating point numbers, typically without recorded measures of accuracy (GNSS provides a measure of accuracy). Here, lines are constructed from points.
 
 \endcol
 \begincol{0.48\textwidth}
 
 ```{r, echo = TRUE, mysize=TRUE, size='\\tiny'}
-strwrap(st_as_text(st_geometry(byb)[[1]]))
+all(st_is(byb, "XY"))
+str(st_coordinates(st_geometry(byb)[[1]]))
 ```
 
 \endcol
@@ -107,9 +109,20 @@ strwrap(st_as_text(st_geometry(byb)[[1]]))
 \begincols
 \begincol{0.48\textwidth}
 
+Spatial raster data is observed using rectangular (often square) cells, within which attribute data are observed. We probably do not know where within the raster cell the observed value is correct; all we know is that at the chosen resolution, this is the value representing the whole cell area.
+
 \endcol
 
 \begincol{0.48\textwidth}
+
+```{r, echo = TRUE, mysize=TRUE, cache=TRUE, size='\\tiny'}
+library(elevatr)
+elevation <- get_elev_raster(as(byb, "Spatial"), z = 14)
+```
+
+```{r, echo = TRUE, eval=FALSE, mysize=TRUE, size='\\tiny'}
+mapview(elevation)
+```
 
 \endcol
 \endcols
@@ -130,11 +143,71 @@ strwrap(st_as_text(st_geometry(byb)[[1]]))
 
 ## Representing spatial vector data in R (**sp**)
 
+\begincols
+\begincol{0.48\textwidth}
+
+\endcol
+
+\begincol{0.48\textwidth}
+
+```{r, echo = TRUE, mysize=TRUE, size='\\tiny'}
+library(sp)
+str(slot(as(st_geometry(byb), "Spatial"), "lines")[[1]])
+```
+
+
+\endcol
+\endcols
+
 ## Representing spatial vector data in R (**sf**)
+
+
+\begincols
+\begincol{0.48\textwidth}
+
+
+
+\endcol
+
+\begincol{0.48\textwidth}
+
+
+```{r, echo = TRUE, mysize=TRUE, size='\\tiny'}
+strwrap(st_as_text(st_geometry(byb)[[1]]))
+```
+
+\endcol
+\endcols
 
 ## Representing spatial raster data in R (**sp** and **raster**)
 
+\begincols
+\begincol{0.48\textwidth}
+
+\endcol
+
+\begincol{0.48\textwidth}
+
+```{r, echo = TRUE, mysize=TRUE, cache=TRUE, size='\\tiny'}
+elevation
+slot(as(elevation, "SpatialGrid"), "grid")
+```
+
+
+\endcol
+\endcols
+
 ## Representing spatial raster data in R (**sf** and **stars**)
+
+\begincols
+\begincol{0.48\textwidth}
+
+\endcol
+
+\begincol{0.48\textwidth}
+
+\endcol
+\endcols
 
 
 # Spatial reference systems
