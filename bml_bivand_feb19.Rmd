@@ -132,10 +132,24 @@ mapview(elevation, col=terrain.colors)
 
 \begincols
 \begincol{0.48\textwidth}
-https://landgis.opengeohub.org/#/?base=Stamen%20(OpenStreetMap)&center=60.4478,5.3352&zoom=11&opacity=80&layer=lcv_land.cover_esacci.lc.l4_c&time=2015
+
+Spatio-temporal data should be the rule but is not. Stacking things up over time to get a balanced stack is hard, and GIS representations do not handle time well. The [\textcolor{mLightBrown}{LandGIS ESA land cover series}](https://landgis.opengeohub.org/#/?base=Stamen%20(OpenStreetMap)&center=60.4478,5.3352&zoom=11&opacity=80&layer=lcv_land.cover_esacci.lc.l4_c&time=2015) may also be downloaded (API coming), and displayed.
+
 \endcol
 
 \begincol{0.48\textwidth}
+
+```{r, echo = TRUE, mysize=TRUE, cache=TRUE, size='\\tiny'}
+library(rgdal)
+fl <- "../ESACCI-LC-L4-LCCS-Map-300m-P1Y-1992_2015-v2.0.7.tif"
+LUC <- readGDAL(fl, offset=c(10400,66450), region.dim=c(400, 700),
+  output.dim=c(400, 700))
+legs <- read.csv2("../ESACCI-LC-Legend.csv")
+```
+
+```{r, echo = TRUE, eval=FALSE, mysize=TRUE, size='\\tiny'}
+mapview(LUC[, , c(1,13,24)])
+```
 
 \endcol
 \endcols
@@ -145,6 +159,8 @@ https://landgis.opengeohub.org/#/?base=Stamen%20(OpenStreetMap)&center=60.4478,5
 
 \begincols
 \begincol{0.48\textwidth}
+
+The **sp** package was a child of its time, using S4 formal classes, and the best compromise we then had of positional representation (not arc-node, but hard to handle holes in polygons). If we coerse `byb` to the **sp** representation, we see the formal class structure. Input/output used OGR/GDAL vector drivers in the **rgdal** package, and topological operations used GEOS in the **rgeos** package.
 
 \endcol
 
@@ -165,12 +181,11 @@ str(slot(as(st_geometry(byb), "Spatial"), "lines")[[1]])
 \begincols
 \begincol{0.48\textwidth}
 
-
+The recent **sf** package bundles GDAL and GEOS (**sp** just defined the classes and methods, leaving I/O and computational geometry to other packages). **sf** used `data.frame` objects with one (or more) geometry column for vector data. The representation follows ISO 19125 (*Simple Features*), and has WKT (text) and WKB (binary) representations (used by GDAL and GEOS internally). The drivers include PostGIS and other database constructions permitting selection, and WFS for server APIs (**rgdal** does too, but requires more from the user).
 
 \endcol
 
 \begincol{0.48\textwidth}
-
 
 ```{r, echo = TRUE, mysize=TRUE, size='\\tiny'}
 strwrap(st_as_text(st_geometry(byb)[[1]]))
@@ -184,13 +199,15 @@ strwrap(st_as_text(st_geometry(byb)[[1]]))
 \begincols
 \begincol{0.48\textwidth}
 
+The **raster** package S4 representation builds on the **sp** representation, using a `GridTopology` S4 object to specify the grid, and a data frame to hold the data. **raster** defines `RasterLayer`, and combinations of layers as stacks (may be different storage classes) or bricks (same storage class - array). Adding time remains an issue; **raster** could avoid reading data into memory using **rgdal** mechanisms.
+
 \endcol
 
 \begincol{0.48\textwidth}
 
 ```{r, echo = TRUE, mysize=TRUE, cache=TRUE, size='\\tiny'}
 elevation
-slot(as(elevation, "SpatialGrid"), "grid")
+slot(LUC, "grid")
 ```
 
 
@@ -202,10 +219,22 @@ slot(as(elevation, "SpatialGrid"), "grid")
 \begincols
 \begincol{0.48\textwidth}
 
+The new **stars** - Scalable, Spatiotemporal Tidy Arrays - package started looking at array structures and has built-in proxy data. Like **sf**, the development of **stars** has been supported by the R Consortium, and **stars** uses the infrastructure of **sf** to use GDAL for input/output and manipulation. In **sf**, the interface to the C++ GDAL library is based on **Rcpp**, which was not available when **rgdal** was written.
+
 \endcol
 
 \begincol{0.48\textwidth}
+```{r, echo = TRUE, mysize=TRUE, cache=TRUE, size='\\tiny'}
+library(stars)
+LUC_stars <- read_stars(fl, proxy=TRUE)
+LUC_stars
+LUC_stars1 <- st_as_stars(LUC_stars[byb,,,])
+```
 
+```{r, echo = TRUE, eval=FALSE, mysize=TRUE, size='\\tiny'}
+image(LUC_stars1[, , , 24], )
+plot(st_geometry(byb), add=TRUE)
+```
 \endcol
 \endcols
 
@@ -217,9 +246,17 @@ slot(as(elevation, "SpatialGrid"), "grid")
 \begincols
 \begincol{0.48\textwidth}
 
+Spatial reference systems define how the geoid is viewed (prime meridian, ellipsoid, datum), and, if projected to the plane, where we are (central longitude, latitude, offsets, etc.). They also define the units - **sf** incorporates smart units handling. Projection (no datum change) and transformation are possible using PROJ and its `proj_api.h` interface directly (`rgdal::spTransform()` and `lwgeom::st_transform_proj()`), or through GDAL (`sf::st_transform()`).
+
 \endcol
 
 \begincol{0.48\textwidth}
+
+```{r, echo = TRUE, mysize=TRUE, cache=TRUE, size='\\tiny'}
+st_crs(byb)
+byb_utm <- st_transform(byb, crs=32632)
+st_crs(byb_utm)
+```
 
 \endcol
 \endcols
