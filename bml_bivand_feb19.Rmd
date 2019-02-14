@@ -121,7 +121,7 @@ elevation <- get_elev_raster(as(byb, "Spatial"), z = 14)
 ```
 
 ```{r, echo = TRUE, eval=FALSE, mysize=TRUE, size='\\tiny'}
-mapview(elevation)
+mapview(elevation, col=terrain.colors)
 ```
 
 \endcol
@@ -132,7 +132,7 @@ mapview(elevation)
 
 \begincols
 \begincol{0.48\textwidth}
-
+https://landgis.opengeohub.org/#/?base=Stamen%20(OpenStreetMap)&center=60.4478,5.3352&zoom=11&opacity=80&layer=lcv_land.cover_esacci.lc.l4_c&time=2015
 \endcol
 
 \begincol{0.48\textwidth}
