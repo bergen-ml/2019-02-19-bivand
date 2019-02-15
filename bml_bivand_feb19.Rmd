@@ -232,8 +232,7 @@ LUC_stars1 <- st_as_stars(LUC_stars[byb,,,])
 
 ```{r, echo = TRUE, eval=FALSE, mysize=TRUE, size='\\tiny'}
 legs <- read.csv("../ESACCI-LC-Legend.csv", header = TRUE, sep = ";")
-plot(LUC_stars1[,,,1], rgb = legs, axes = TRUE)
-plot(st_geometry(byb), add=TRUE)
+plot(LUC_stars1, band=24, rgb = legs, main="")
 ```
 \endcol
 \endcols
