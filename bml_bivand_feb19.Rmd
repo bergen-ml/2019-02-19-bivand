@@ -294,7 +294,12 @@ head(st_coordinates(st_geometry(byb_utm)[[1]]), n=1)
 \begincols
 \begincol{0.48\textwidth}
 
+[\textcolor{mLightBrown}{}](http://openeo.org/about/)
+
+[\textcolor{mLightBrown}{}](https://www.r-spatial.org/r/2018/03/23/stars3.html)
+
 \endcol
+
 
 \begincol{0.48\textwidth}
 
