@@ -133,7 +133,7 @@ mapview(elevation, col=terrain.colors)
 \begincols
 \begincol{0.48\textwidth}
 
-Spatio-temporal data should be the rule but is not. Stacking things up over time to get a balanced stack is hard, and GIS representations do not handle time well. The [\textcolor{mLightBrown}{LandGIS ESA land cover series}](https://landgis.opengeohub.org/#/?base=Stamen%20(OpenStreetMap)&center=60.4478,5.3352&zoom=11&opacity=80&layer=lcv_land.cover_esacci.lc.l4_c&time=2015) may also be downloaded (API coming), and displayed.
+Spatio-temporal data should be the rule but is not. Stacking things up over time to get a balanced stack is hard, and GIS representations do not handle time well. The [\textcolor{mLightBrown}{LandGIS ESA CCI land cover series}](https://landgis.opengeohub.org/#/?base=Stamen%20(OpenStreetMap)&center=60.4478,5.3352&zoom=11&opacity=80&layer=lcv_land.cover_esacci.lc.l4_c&time=2015) may also be downloaded (API coming), and displayed.
 
 \endcol
 
@@ -253,7 +253,8 @@ Spatial reference systems define how the geoid is viewed (prime meridian, ellips
 \begincol{0.48\textwidth}
 
 ```{r, echo = TRUE, mysize=TRUE, cache=TRUE, size='\\tiny'}
-st_crs(byb)
+(WKT <- st_crs(byb))
+strwrap(gsub(",", ", ", st_as_text(WKT)))
 byb_utm <- st_transform(byb, crs=32632)
 st_crs(byb_utm)
 ```
@@ -262,14 +263,24 @@ st_crs(byb_utm)
 \endcols
 
 
-## Escaping the WGS84 hub: PROJ4 6.0 and WKT2
+## Escaping the WGS84 hub: PROJ 6.0 and OGC WKT2
 
 \begincols
 \begincol{0.48\textwidth}
 
+Changes in the legacy PROJ representation and WGS84 transformation hub have been coordinated through the [\textcolor{mLightBrown}{GDAL barn raising}](https://gdalbarn.com/) initiative. The syntax is changing to pipelines, but crucially WGS84 will often cease to be the pivot for moving between datums. A new OGC WKT is coming, and an SQLite EPSG file database will replace CSV files. SRS will begin to support 3D by default, adding time too as SRS change. 
+
 \endcol
 
 \begincol{0.48\textwidth}
+
+```{r, echo = TRUE, mysize=TRUE, cache=TRUE, size='\\tiny'}
+head(st_coordinates(st_geometry(byb)[[1]]), n=1)
+system(paste("echo 5.333375 60.30436 |", 
+  "proj +proj=pipeline +ellps=WGS84", 
+  "+step +init=epsg:32632"), intern=TRUE)
+head(st_coordinates(st_geometry(byb_utm)[[1]]), n=1)
+```
 
 \endcol
 \endcols
