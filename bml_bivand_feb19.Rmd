@@ -144,7 +144,6 @@ library(rgdal)
 fl <- "../ESACCI-LC-L4-LCCS-Map-300m-P1Y-1992_2015-v2.0.7.tif"
 LUC <- readGDAL(fl, offset=c(10400,66450), region.dim=c(400, 700),
   output.dim=c(400, 700))
-legs <- read.csv2("../ESACCI-LC-Legend.csv")
 ```
 
 ```{r, echo = TRUE, eval=FALSE, mysize=TRUE, size='\\tiny'}
@@ -232,7 +231,8 @@ LUC_stars1 <- st_as_stars(LUC_stars[byb,,,])
 ```
 
 ```{r, echo = TRUE, eval=FALSE, mysize=TRUE, size='\\tiny'}
-image(LUC_stars1[, , , 24], )
+legs <- read.csv("../ESACCI-LC-Legend.csv", header = TRUE, sep = ";")
+plot(LUC_stars1[,,,1], rgb = legs, axes = TRUE)
 plot(st_geometry(byb), add=TRUE)
 ```
 \endcol
@@ -294,30 +294,17 @@ head(st_coordinates(st_geometry(byb_utm)[[1]]), n=1)
 \begincols
 \begincol{0.48\textwidth}
 
-[\textcolor{mLightBrown}{}](http://openeo.org/about/)
-
-[\textcolor{mLightBrown}{}](https://www.r-spatial.org/r/2018/03/23/stars3.html)
+As earth observation (and other remote sensor) data volume (resolution) and frequency has increased, legacy technologies of downloading (usually calibrated) scenes to multiple user systems have been struggling to keep up. Terralib is an early example of trying to keep data in databases, but maybe using WMS and other API technologies.
 
 \endcol
 
-
 \begincol{0.48\textwidth}
+
+\includegraphics[width=0.95\textwidth]{terralib.png}
 
 \endcol
 \endcols
 
-
-## Array storage
-
-\begincols
-\begincol{0.48\textwidth}
-
-\endcol
-
-\begincol{0.48\textwidth}
-
-\endcol
-\endcols
 
 
 ## Cloud storage
@@ -325,9 +312,22 @@ head(st_coordinates(st_geometry(byb_utm)[[1]]), n=1)
 \begincols
 \begincol{0.48\textwidth}
 
+[\textcolor{mLightBrown}{OpenEO}](http://openeo.org/about/) proposes proof-of-concept client-server API approaches; the **elevatr** example earlier shows a specialised use. They build on data being kept in the cloud, and accessed by selection through an API. There is also some [\textcolor{mLightBrown}{client-server}](https://www.r-spatial.org/r/2018/03/23/stars3.html) code in **stars**, needing to be run in two separate, concurrent R sessions:
+
 \endcol
 
 \begincol{0.48\textwidth}
+```{r, echo = TRUE, eval=FALSE, mysize=TRUE, cache=TRUE, size='\\tiny'}
+library(plumber)
+r <- plumb(system.file("plumber/server.R", package = "stars"))
+r$run(port=8000)
+```
+
+```{r, echo = TRUE, eval=FALSE, mysize=TRUE, cache=TRUE, size='\\tiny'}
+source(system.file("plumber/client.R", package = "stars"),,
+  echo = TRUE)
+plot(xx)
+```
 
 \endcol
 \endcols
