@@ -340,6 +340,8 @@ plot(xx)
 \begincols
 \begincol{0.48\textwidth}
 
+[\textcolor{mLightBrown}{city bike}](https://bergenbysykkel.no/en/open-data)
+
 \endcol
 
 \begincol{0.48\textwidth}
@@ -349,7 +351,8 @@ bike_fls <- list.files("../bbs")
 trips0 <- NULL
 for (fl in bike_fls) trips0 <- rbind(trips0,
   read.csv(file.path("../bbs", fl), header=TRUE))
-trips <- trips0[,c(1, 4, 2, 9)]
+trips0 <- trips0[!(trips0[,9]==84),]
+trips <- cbind(trips0[,c(1, 4, 2, 9)], data.frame(count=1))
 from <- unique(trips0[,c(4,5,7,8)])
 names(from) <- substring(names(from), 7)
 to <- unique(trips0[,c(9,10,12,13)])
@@ -358,9 +361,17 @@ stations0 <- st_as_sf(merge(from, to, all=TRUE),
   coords=c("station_longitude", "station_latitude"))
 stations <- aggregate(stations0, list(stations0$station_id),
   head, n=1)
+suppressWarnings(stations <- st_cast(stations, "POINT"))
+st_crs(stations) <- 4326
+od <- aggregate(trips[,-(1:4)], list(trips$start_station_id,
+  trips$end_station_id), sum)
+library(stplanr)
+od_lines <- od2line(flow=od, zones=stations, zone_code="Group.1",
+  origin_code="Group.1", dest_code="Group.2")
 ```
 
-```{r, echo = TRUE, echo=TRUE, mysize=TRUE, cache=TRUE, size='\\tiny'}
+```{r, echo = TRUE, eval=FALSE, mysize=TRUE, cache=TRUE, size='\\tiny'}
+mapview(od_lines, alpha=0.2, lwd=(od_lines$x/max(od_lines$x))*10)
 ```
 
 \endcol
@@ -429,16 +440,12 @@ stations <- aggregate(stations0, list(stations0$station_id),
 
 ## Conclusions
 
-\begincols
-\begincol{0.48\textwidth}
+- 
 
-\endcol
+- 
 
-\begincol{0.48\textwidth}
+- 
 
-\endcol
-\endcols
+- 
 
 
-
-[comment]: \nobibliography{bml19}
