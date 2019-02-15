@@ -347,16 +347,21 @@ plot(xx)
 ```{r, echo = TRUE, mysize=TRUE, cache=TRUE, size='\\tiny'}
 bike_fls <- list.files("../bbs")
 trips0 <- NULL
-for (fl in bike_fls) trips0 <- rbind(trips0, read.csv(file.path("../bbs", fl), header=TRUE))
+for (fl in bike_fls) trips0 <- rbind(trips0,
+  read.csv(file.path("../bbs", fl), header=TRUE))
 trips <- trips0[,c(1, 4, 2, 9)]
 from <- unique(trips0[,c(4,5,7,8)])
 names(from) <- substring(names(from), 7)
 to <- unique(trips0[,c(9,10,12,13)])
 names(to) <- substring(names(to), 5)
-stations0 <- st_as_sf(merge(from, to, all=TRUE), coords=c("station_longitude", "station_latitude"))
-stations <- aggregate(stations0, list(stations0$station_id), head, n=1)
+stations0 <- st_as_sf(merge(from, to, all=TRUE),
+  coords=c("station_longitude", "station_latitude"))
+stations <- aggregate(stations0, list(stations0$station_id),
+  head, n=1)
 ```
 
+```{r, echo = TRUE, echo=TRUE, mysize=TRUE, cache=TRUE, size='\\tiny'}
+```
 
 \endcol
 \endcols
