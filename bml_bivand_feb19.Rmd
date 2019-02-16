@@ -237,6 +237,20 @@ plot(LUC_stars1, band=24, rgb = legs, main="")
 \endcol
 \endcols
 
+```{r, echo = FALSE, eval=FALSE, mysize=TRUE, size='\\tiny'}
+library(raster)
+rst1 = raster("../LUC3.tif", band=1)
+rst3 = raster("../LUC3.tif", band=3)
+rst1 = as.factor(rst1)
+rst3 = as.factor(rst3)
+rst <- stack(rst1, rst3)
+hex = grDevices::rgb(legs$R, legs$G, legs$B, maxColorValue = 255, 
+  names = legs$NB_LAB)
+hex = hex[names(hex) %in% intersect(as.character(levels(rst)[[1]]$ID),
+  as.character(levels(rst)[[2]]$ID))]
+mapview(rst, col.regions = hex)
+mapview(rst, col.regions = hex, alpha=1)
+```
 
 # Spatial reference systems
 
@@ -340,7 +354,7 @@ plot(xx)
 \begincols
 \begincol{0.48\textwidth}
 
-[\textcolor{mLightBrown}{city bike}](https://bergenbysykkel.no/en/open-data)
+We can download monthly CSV files of [\textcolor{mLightBrown}{city bike}](https://bergenbysykkel.no/en/open-data) use, and manipulate the input to let us use the **stplanr** package to aggregate origin-destination data. One destination is in Oslo, but otherwise things are OK. We can use [\textcolor{mLightBrown}{CycleStreets}](www.cyclestreets.net) to route the volumes onto [\textcolor{mLightBrown}{OSM}](https://www.openstreetmap.org/copyright) cycle paths, via an API and API key.
 
 \endcol
 
@@ -372,6 +386,11 @@ od_lines <- od2line(flow=od, zones=stations, zone_code="Group.1",
 
 ```{r, echo = TRUE, eval=FALSE, mysize=TRUE, cache=TRUE, size='\\tiny'}
 mapview(od_lines, alpha=0.2, lwd=(od_lines$x/max(od_lines$x))*10)
+Sys.setenv(CYCLESTREET="xXxXXxXxXxXxXxXxX")
+od_routes <- line2route(od_lines, "route_cyclestreet",
+  plan = "fastest")
+## od_routes <- readRDS("../od_routes.rds")
+mapview(od_routes, alpha=0.2, lwd=(od_lines$x/max(od_lines$x))*10)
 ```
 
 \endcol
