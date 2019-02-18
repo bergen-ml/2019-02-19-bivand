@@ -357,11 +357,25 @@ plot(xx)
 \endcol
 
 \begincol{0.48\textwidth}
-```{r, echo = TRUE, mysize=TRUE, size='\\tiny'}
+```{r, echo = TRUE, mysize=TRUE, size='\\tiny', message=FALSE, warning=FALSE}
 library(openeo) # "master" branch
 euracHost = "http://saocompute.eurac.edu/openEO_0_3_0/openeo/"
 eurac = connect(host = euracHost,disable_auth = TRUE)
-eurac %>% listCollections()
+pgb = eurac %>% pgb()
+bb <- list(west=10.98,east=11.25,south=46.76,north=46.58)
+tt <- c("2017-01-01T00:00:00Z","2017-01-31T00:00:00Z")
+task = pgb$collection$S2_L2A_T32TPS_20M %>%
+  pgb$filter_bbox(extent=bb) %>%
+  pgb$filter_daterange(extent=tt) %>%
+  pgb$NDVI(red="B04",nir="B8A") %>%
+  pgb$min_time()
+tf <- tempfile()
+raster = eurac %>% preview(task=task, format="GTiff",
+  output_file=tf)
+```
+
+```{r, echo = TRUE, eval=FALSE, mysize=TRUE, size='\\tiny'}
+mapview(raster(raster))
 ```
 
 \endcol
@@ -428,7 +442,7 @@ Interpolation from data locations to other locations, also for re-sampling data 
 
 \begincol{0.48\textwidth}
 
-```{r, echo = TRUE, mysize=TRUE, cache=TRUE, size='\\tiny'}
+```{r, echo = TRUE, mysize=TRUE, cache=TRUE, size='\\tiny', message=FALSE, warning=FALSE}
 library(geoR)
 data(SIC)
 library(sp)
@@ -437,26 +451,48 @@ sic.100SP <- SpatialPointsDataFrame(SpatialPoints(sic.100$coords),
 sic.allSP <- SpatialPointsDataFrame(SpatialPoints(sic.all$coords),
  data=data.frame(precip=sic.all$data, altitude=sic.all$altitude))
 names(sic.allSP) <- c("precip", "altitude")
-sic.367SP <- sic.allSP[which(!rownames(sic.all$coords) %in% rownames(sic.100$coords)),]
+sic.367SP <- sic.allSP[which(!rownames(sic.all$coords) %in% 
+  rownames(sic.100$coords)),]
 library(automap)
-aK <- autoKrige(formula=precip ~ altitude, input_data=sic.100SP, new_data=sic.367SP)
+aK <- autoKrige(formula=precip ~ altitude, input_data=sic.100SP,
+  new_data=sic.367SP)
 res <- aK$krige_output
+```
+\endcol
+\endcols
+
+## Interpolation
+
+\begincols
+\begincol{0.48\textwidth}
+ 
+\endcol
+
+\begincol{0.48\textwidth}
+
+```{r, echo = TRUE, mysize=TRUE, cache=TRUE, size='\\tiny', message=FALSE, warning=FALSE}
 library(rgeos)
-dist0 <- as.data.frame(gDistance(sic.100SP["precip"], sic.100SP["precip"], byid=TRUE))
+dist0 <- as.data.frame(gDistance(sic.100SP["precip"],
+  sic.100SP["precip"], byid=TRUE))
 names(dist0) <- paste("layer", names(dist0), sep=".")
-dist1 <- as.data.frame(gDistance(sic.100SP["precip"], sic.367SP["precip"], byid=TRUE))
+dist1 <- as.data.frame(gDistance(sic.100SP["precip"],
+  sic.367SP["precip"], byid=TRUE))
 names(dist1) <- paste("layer", names(dist1), sep=".")
-rm.precip <- cbind(as.data.frame(sic.100SP)[c("precip", "altitude")], dist0)
+rm.precip <- cbind(as.data.frame(sic.100SP)[c("precip", "altitude")],
+  dist0)
 rm.precip1 <- cbind(as.data.frame(sic.367SP)[c("altitude")], dist1)
 dn0 <- paste(names(dist0), collapse="+")
 fm0 <- as.formula(paste("precip ~ altitude +", dn0))
 library(ranger)
-m.precip <- ranger(fm0, rm.precip, quantreg=TRUE, num.trees=150, seed=1, keep.inbag=TRUE)
-res$rf_pred <- predict(m.precip, rm.precip1, type="response")$predictions
-res$rf_sd1 <- predict(m.precip, rm.precip1, type="se", se.method="infjack")$se
-res$rf_sd2 <- predict(m.precip, rm.precip1, type="se", se.method="jack")$se
+m.precip <- ranger(fm0, rm.precip, quantreg=TRUE, num.trees=150,
+  seed=1, keep.inbag=TRUE)
+res$rf_pred <- predict(m.precip, rm.precip1,
+  type="response")$predictions
+res$rf_sd1 <- predict(m.precip, rm.precip1, type="se",
+  se.method="infjack")$se
+res$rf_sd2 <- predict(m.precip, rm.precip1, type="se",
+  se.method="jack")$se
 ```
-
 
 ```{r, echo = TRUE, eval=FALSE, mysize=TRUE, size='\\tiny'}
 spplot(res, zcol=c(1,4))
