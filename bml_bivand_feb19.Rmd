@@ -91,7 +91,7 @@ mapview(byb)
 \begincols
 \begincol{0.48\textwidth}
 
-Spatial vector data is based on points, from which other geometries are constructed. The light rail tracks are 2D vector data. The points themselves are stored as double precision floating point numbers, typically without recorded measures of accuracy (GNSS provides a measure of accuracy). Here, lines are constructed from points.
+Spatial vector data is based on points, from which other geometries are constructed. Vector data is often also termed object-based spatial data. The light rail tracks are 2D vector data. The points themselves are stored as double precision floating point numbers, typically without recorded measures of accuracy (GNSS provides a measure of accuracy). Here, lines are constructed from points.
 
 \endcol
 \begincol{0.48\textwidth}
@@ -109,7 +109,7 @@ str(st_coordinates(st_geometry(byb)[[1]]))
 \begincols
 \begincol{0.48\textwidth}
 
-Spatial raster data is observed using rectangular (often square) cells, within which attribute data are observed. We probably do not know where within the raster cell the observed value is correct; all we know is that at the chosen resolution, this is the value representing the whole cell area.
+Spatial raster data is observed using rectangular (often square) cells, within which attribute data are observed. Raster data are very rarely object-based, very often they are field-based and could have been observed everywhere. We probably do not know where within the raster cell the observed value is correct; all we know is that at the chosen resolution, this is the value representing the whole cell area.
 
 \endcol
 
@@ -422,10 +422,47 @@ mapview(od_routes, alpha=0.2, lwd=(od_lines$x/max(od_lines$x))*10)
 
 \begincols
 \begincol{0.48\textwidth}
+Interpolation from data locations to other locations, also for re-sampling data resolution for raster data, is often computationally intensive. 
 [\textcolor{mLightBrown}{Predicive Soil Mapping with R}](https://envirometrix.github.io/PredictiveSoilMapping/) uses random forest approaches to prediction, but this isn't new, see [\textcolor{mLightBrown}{this example from 2003}](https://www.r-project.org/conferences/DSC-2003/Proceedings/FurlanelloEtAl.pdf). 
 \endcol
 
 \begincol{0.48\textwidth}
+
+```{r, echo = TRUE, mysize=TRUE, cache=TRUE, size='\\tiny'}
+library(geoR)
+data(SIC)
+library(sp)
+sic.100SP <- SpatialPointsDataFrame(SpatialPoints(sic.100$coords),
+ data=data.frame(precip=sic.100$data, altitude=sic.100$altitude))
+sic.allSP <- SpatialPointsDataFrame(SpatialPoints(sic.all$coords),
+ data=data.frame(precip=sic.all$data, altitude=sic.all$altitude))
+names(sic.allSP) <- c("precip", "altitude")
+sic.367SP <- sic.allSP[which(!rownames(sic.all$coords) %in% rownames(sic.100$coords)),]
+library(automap)
+aK <- autoKrige(formula=precip ~ altitude, input_data=sic.100SP, new_data=sic.367SP)
+res <- aK$krige_output
+library(rgeos)
+dist0 <- as.data.frame(gDistance(sic.100SP["precip"], sic.100SP["precip"], byid=TRUE))
+names(dist0) <- paste("layer", names(dist0), sep=".")
+dist1 <- as.data.frame(gDistance(sic.100SP["precip"], sic.367SP["precip"], byid=TRUE))
+names(dist1) <- paste("layer", names(dist1), sep=".")
+rm.precip <- cbind(as.data.frame(sic.100SP)[c("precip", "altitude")], dist0)
+rm.precip1 <- cbind(as.data.frame(sic.367SP)[c("altitude")], dist1)
+dn0 <- paste(names(dist0), collapse="+")
+fm0 <- as.formula(paste("precip ~ altitude +", dn0))
+library(ranger)
+m.precip <- ranger(fm0, rm.precip, quantreg=TRUE, num.trees=150, seed=1, keep.inbag=TRUE)
+res$rf_pred <- predict(m.precip, rm.precip1, type="response")$predictions
+res$rf_sd1 <- predict(m.precip, rm.precip1, type="se", se.method="infjack")$se
+res$rf_sd2 <- predict(m.precip, rm.precip1, type="se", se.method="jack")$se
+```
+
+
+```{r, echo = TRUE, eval=FALSE, mysize=TRUE, size='\\tiny'}
+spplot(res, zcol=c(1,4))
+spplot(res, zcol=c(3,5,6))
+```
+
 
 \endcol
 \endcols
