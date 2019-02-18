@@ -347,41 +347,6 @@ plot(xx)
 \endcol
 \endcols
 
-## Cloud storage
-
-\begincols
-\begincol{0.48\textwidth}
-
-[\textcolor{mLightBrown}{OpenEO}](http://openeo.org/about/) proposes proof-of-concept client-server API approaches (and [\textcolor{mLightBrown}{this issue}](https://github.com/Open-EO/openeo-r-client/issues/25))
-
-\endcol
-
-\begincol{0.48\textwidth}
-```{r, echo = TRUE, mysize=TRUE, size='\\tiny', message=FALSE, warning=FALSE}
-library(openeo) # "master" branch
-euracHost = "http://saocompute.eurac.edu/openEO_0_3_0/openeo/"
-eurac = connect(host = euracHost,disable_auth = TRUE)
-pgb = eurac %>% pgb()
-bb <- list(west=10.98,east=11.25,south=46.76,north=46.58)
-tt <- c("2017-01-01T00:00:00Z","2017-01-31T00:00:00Z")
-task = pgb$collection$S2_L2A_T32TPS_20M %>%
-  pgb$filter_bbox(extent=bb) %>%
-  pgb$filter_daterange(extent=tt) %>%
-  pgb$NDVI(red="B04",nir="B8A") %>%
-  pgb$min_time()
-tf <- tempfile()
-raster = eurac %>% preview(task=task, format="GTiff",
-  output_file=tf)
-```
-
-```{r, echo = TRUE, eval=FALSE, mysize=TRUE, size='\\tiny'}
-mapview(raster(raster))
-```
-
-\endcol
-\endcols
-
-
 # Computationally intensive tasks
 
 ## Data handling
@@ -436,8 +401,7 @@ mapview(od_routes, alpha=0.2, lwd=(od_lines$x/max(od_lines$x))*10)
 
 \begincols
 \begincol{0.48\textwidth}
-Interpolation from data locations to other locations, also for re-sampling data resolution for raster data, is often computationally intensive. 
-[\textcolor{mLightBrown}{Predicive Soil Mapping with R}](https://envirometrix.github.io/PredictiveSoilMapping/) uses random forest approaches to prediction, but this isn't new, see [\textcolor{mLightBrown}{this example from 2003}](https://www.r-project.org/conferences/DSC-2003/Proceedings/FurlanelloEtAl.pdf). 
+Interpolation from data locations to other locations, also for re-sampling data resolution for raster data, is often computationally intensive. The spatial autocorrelation between data locations is modelled first, then used to predict to at the other locations, here using `automap::autoKrige()`. The data are for Swiss precipitation data from a spatial interpolation contest.
 \endcol
 
 \begincol{0.48\textwidth}
@@ -465,7 +429,8 @@ res <- aK$krige_output
 
 \begincols
 \begincol{0.48\textwidth}
- 
+[\textcolor{mLightBrown}{Predicive Soil Mapping with R}](https://envirometrix.github.io/PredictiveSoilMapping/) uses random forest approaches to prediction, but this isn't new, see [\textcolor{mLightBrown}{this example from 2003}](https://www.r-project.org/conferences/DSC-2003/Proceedings/FurlanelloEtAl.pdf). The approach here uses distances between points in the fitting set, and between those and the prediction set as extra variables.
+
 \endcol
 
 \begincol{0.48\textwidth}
@@ -508,11 +473,34 @@ spplot(res, zcol=c(3,5,6))
 
 \begincols
 \begincol{0.48\textwidth}
-[\textcolor{mLightBrown}{Spatial CV}](https://geocompr.robinlovelace.net/spatial-cv.html#intro-cv)
+However, geographic data is special. This means these points are not statistically independent because training and test points in conventional CV are often too close to each other. ‘Training’ observations near the ‘test’ observations can provide a kind of ‘sneak preview’: information that should be unavailable to the training dataset. To alleviate this problem ‘spatial partitioning’ is used to split the observations into spatially disjointed subsets [\textcolor{mLightBrown}{Spatial CV}](https://geocompr.robinlovelace.net/spatial-cv.html#intro-cv). `partition_kmeans()` has been integrated into **mlr**. **sperrorest** is currently not actively developed [\textcolor{mLightBrown}{mlr tutorial}](https://mlr.mlr-org.com/articles/tutorial/handling_of_spatial_data.html).
 \endcol
 
 \begincol{0.48\textwidth}
+```{r, echo = TRUE, mysize=TRUE, cache=TRUE, size='\\tiny', message=FALSE, warning=FALSE}
+library(mlr)
+data(spatial.task)
+learner.rf = makeLearner("classif.ranger", predict.type = "prob")
+resampling = makeResampleDesc("SpRepCV", fold = 5, reps = 5)
+set.seed(123)
+out_sp = resample(learner = learner.rf, task = spatial.task,
+  resampling = resampling, measures = list(auc))
+learner.rf = makeLearner("classif.ranger", predict.type = "prob")
+resampling = makeResampleDesc("RepCV", fold = 5, reps = 5)
+set.seed(123)
+out_nsp = resample(learner = learner.rf, task = spatial.task,
+  resampling = resampling, measures = list(auc))
+```
 
+```{r, echo = FALSE, eval=FALSE, mysize=TRUE, size='\\tiny'}
+library(cowplot)
+plots = createSpatialResamplingPlots(spatial.task,
+  list("SpRepCV" = out_sp, "RepCV" = out_nsp), crs = 32717,
+  repetitions = 1, x.axis.breaks = c(-79.075), 
+  y.axis.breaks = c(-3.975))
+plot_grid(plotlist = plots[["Plots"]], ncol = 5, nrow = 2,
+  labels = plots[["Labels"]], label_size = 8)
+```
 \endcol
 \endcols
 
@@ -520,24 +508,79 @@ spplot(res, zcol=c(3,5,6))
 
 \begincols
 \begincol{0.48\textwidth}
-
+Both spatial autocorrelation and spatial heterogeneity play into model fitting in spatial econometrics. The **lagsarlmtree** package uses a regression tree to handle heterogeneity and a spatial lag model to handle autocorrelation, here with US counties, and using sparse Cholesky methods to reduce issues with timing and memory (even though 3k isn't much).
 \endcol
 
 \begincol{0.48\textwidth}
 
+```{r, echo = TRUE, mysize=TRUE, cache=TRUE, size='\\tiny', message=FALSE, warning=FALSE}
+library(lagsarlmtree) # development version
+data(elect80, package="spData")
+res <- lagsarlmtree(pc_turnout ~ pc_college + pc_homeownership +
+  pc_income | pc_college + pc_homeownership + pc_income,
+  data=as(elect80, "data.frame"), listw=elect80_lw, method="Matrix")
+coef(res, model = "rho")
+```
+
+```{r, echo = FALSE, eval=FALSE, mysize=TRUE, size='\\tiny'}
+plot(res, tp_args = list(which = 1))
+dums <- res$lagsarlm$tarX[,1:12]
+vals <- as.numeric(substring(colnames(dums), 7))
+elect80$fdums <- as.factor(dums %*% vals)
+library(RColorBrewer)
+mapview(elect80, zcol="fdums", col.regions=brewer.pal(12, "Paired"))
+```
+
 \endcol
 \endcols
+
+
+## Cloud storage
+
+\begincols
+\begincol{0.48\textwidth}
+
+[\textcolor{mLightBrown}{OpenEO}](http://openeo.org/about/) proposes proof-of-concept client-server API approaches (and [\textcolor{mLightBrown}{this issue}](https://github.com/Open-EO/openeo-r-client/issues/25)). The sample data sets are from the southern Alps, and the project is under development.
+
+\endcol
+
+\begincol{0.48\textwidth}
+```{r, echo = TRUE, mysize=TRUE, size='\\tiny', message=FALSE, warning=FALSE}
+library(openeo) # "master" branch
+euracHost = "http://saocompute.eurac.edu/openEO_0_3_0/openeo/"
+eurac = connect(host = euracHost,disable_auth = TRUE)
+pgb = eurac %>% pgb()
+bb <- list(west=10.98,east=11.25,south=46.58,north=46.76)
+tt <- c("2017-01-01T00:00:00Z","2017-01-31T00:00:00Z")
+task = pgb$collection$S2_L2A_T32TPS_20M %>%
+  pgb$filter_bbox(extent=bb) %>%
+  pgb$filter_daterange(extent=tt) %>%
+  pgb$NDVI(red="B04",nir="B8A") %>%
+  pgb$min_time()
+tf <- tempfile()
+raster = eurac %>% preview(task=task, format="GTiff",
+  output_file=tf)
+```
+
+```{r, echo = TRUE, eval=FALSE, mysize=TRUE, size='\\tiny'}
+mapview(raster(raster))
+```
+
+\endcol
+\endcols
+
+
 
 # Conclusions
 
 ## Conclusions
 
-- 
+- Underlying and ongoing changes in the representation of spatial data
 
-- 
+- Further obgoing changes in APIs and data access, and in the availability of EO and movement data (both spatio-temporal)
 
-- 
+- Spatial is somewhat special as seen in the spatial CV case, so ML approaches need to be  aware of spatial and spatio-temporal structure
 
-- 
+- Visualization presents its own challenges, partly handled by JS on web map backgrounds
 
 
