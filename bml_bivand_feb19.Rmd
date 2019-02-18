@@ -54,7 +54,7 @@ options(width = 50)
 \begincols
 \begincol{0.48\textwidth}
 
-Spatial data typically combine position data in 2D (or 3D), attribute data and metadata related to the position data. Much spatial data could be called map data or GIS data. We collect and handle much more position data since global navigation satellite system (GNSS) like GPS came on stream 20 years ago, earth observation satellites have been providing data for longer. 
+Spatial data typically combine position data in 2D (or 3D), attribute data and metadata related to the position data. Much spatial data could be called map data or GIS data. We collect and handle much more position data since global navigation satellite system (GNSS) like GPS came on stream 20 years ago, earth observation satellites have been providing data for longer. ([\textcolor{mLightBrown}{Geocomputation with R}](https://geocompr.robinlovelace.net/) may be useful, as may [\textcolor{mLightBrown}{SDSR}](https://t.co/e9qDn5tqTO)).
 
 \endcol
 \begincol{0.48\textwidth}
@@ -249,7 +249,9 @@ hex = grDevices::rgb(legs$R, legs$G, legs$B, maxColorValue = 255,
 hex = hex[names(hex) %in% intersect(as.character(levels(rst)[[1]]$ID),
   as.character(levels(rst)[[2]]$ID))]
 mapview(rst, col.regions = hex)
-mapview(rst, col.regions = hex, alpha=1)
+#library(leaflet.opacity)
+#library(leaflet)
+mapview(rst, col.regions = hex, alpha=1)#@map %>% addOpacitySlider("rst")
 ```
 
 # Spatial reference systems
@@ -325,7 +327,7 @@ As earth observation (and other remote sensor) data volume (resolution) and freq
 \begincols
 \begincol{0.48\textwidth}
 
-[\textcolor{mLightBrown}{OpenEO}](http://openeo.org/about/) proposes proof-of-concept client-server API approaches; the **elevatr** example earlier shows a specialised use. They build on data being kept in the cloud, and accessed by selection through an API. There is also some [\textcolor{mLightBrown}{client-server}](https://www.r-spatial.org/r/2018/03/23/stars3.html) code in **stars**, needing to be run in two separate, concurrent R sessions:
+The **elevatr** example earlier shows a specialised use. They build on data being kept in the cloud, and accessed by selection through an API. There is also some [\textcolor{mLightBrown}{client-server}](https://www.r-spatial.org/r/2018/03/23/stars3.html) code in **stars**, needing to be run in two separate, concurrent R sessions:
 
 \endcol
 
@@ -345,6 +347,25 @@ plot(xx)
 \endcol
 \endcols
 
+## Cloud storage
+
+\begincols
+\begincol{0.48\textwidth}
+
+[\textcolor{mLightBrown}{OpenEO}](http://openeo.org/about/) proposes proof-of-concept client-server API approaches (and [\textcolor{mLightBrown}{this issue}](https://github.com/Open-EO/openeo-r-client/issues/25))
+
+\endcol
+
+\begincol{0.48\textwidth}
+```{r, echo = TRUE, mysize=TRUE, size='\\tiny'}
+library(openeo) # "master" branch
+euracHost = "http://saocompute.eurac.edu/openEO_0_3_0/openeo/"
+eurac = connect(host = euracHost,disable_auth = TRUE)
+eurac %>% listCollections()
+```
+
+\endcol
+\endcols
 
 
 # Computationally intensive tasks
@@ -354,7 +375,7 @@ plot(xx)
 \begincols
 \begincol{0.48\textwidth}
 
-We can download monthly CSV files of [\textcolor{mLightBrown}{city bike}](https://bergenbysykkel.no/en/open-data) use, and manipulate the input to let us use the **stplanr** package to aggregate origin-destination data. One destination is in Oslo, but otherwise things are OK. We can use [\textcolor{mLightBrown}{CycleStreets}](www.cyclestreets.net) to route the volumes onto [\textcolor{mLightBrown}{OSM}](https://www.openstreetmap.org/copyright) cycle paths, via an API and API key.
+We can download monthly CSV files of [\textcolor{mLightBrown}{city bike}](https://bergenbysykkel.no/en/open-data) use, and manipulate the input to let us use the **stplanr** package to aggregate origin-destination data. One destination is in Oslo, but otherwise things are OK. We can use [\textcolor{mLightBrown}{CycleStreets}](www.cyclestreets.net) to route the volumes onto [\textcolor{mLightBrown}{OSM}](https://www.openstreetmap.org/copyright) cycle paths, via an API and API key. We'd still need to aggregate the bike traffic by cycle path segment for completeness.
 
 \endcol
 
@@ -401,7 +422,7 @@ mapview(od_routes, alpha=0.2, lwd=(od_lines$x/max(od_lines$x))*10)
 
 \begincols
 \begincol{0.48\textwidth}
-
+[\textcolor{mLightBrown}{Predicive Soil Mapping with R}](https://envirometrix.github.io/PredictiveSoilMapping/) uses random forest approaches to prediction, but this isn't new, see [\textcolor{mLightBrown}{this example from 2003}](https://www.r-project.org/conferences/DSC-2003/Proceedings/FurlanelloEtAl.pdf). 
 \endcol
 
 \begincol{0.48\textwidth}
@@ -412,7 +433,17 @@ mapview(od_routes, alpha=0.2, lwd=(od_lines$x/max(od_lines$x))*10)
 
 ## Inference
 
-## Inference under heterogeneity
+\begincols
+\begincol{0.48\textwidth}
+[\textcolor{mLightBrown}{Spatial CV}](https://geocompr.robinlovelace.net/spatial-cv.html#intro-cv)
+\endcol
+
+\begincol{0.48\textwidth}
+
+\endcol
+\endcols
+
+## Inference
 
 \begincols
 \begincol{0.48\textwidth}
@@ -423,37 +454,6 @@ mapview(od_routes, alpha=0.2, lwd=(od_lines$x/max(od_lines$x))*10)
 
 \endcol
 \endcols
-
-
-## Inference under dependence
-
-\begincols
-\begincol{0.48\textwidth}
-
-\endcol
-
-\begincol{0.48\textwidth}
-
-\endcol
-\endcols
-
-
-
-# Spatial dependence and subsetting data
-
-## Heterogeneity and dependence
-
-
-\begincols
-\begincol{0.48\textwidth}
-
-\endcol
-
-\begincol{0.48\textwidth}
-
-\endcol
-\endcols
-
 
 # Conclusions
 
