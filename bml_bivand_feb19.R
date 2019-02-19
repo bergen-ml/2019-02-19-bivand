@@ -87,9 +87,9 @@ head(st_coordinates(st_geometry(byb_utm)[[1]]), n=1)
 
 ## ---- echo = TRUE, eval=FALSE, mysize=TRUE, cache=TRUE, size='\\tiny'----
 #!!!!! DIFFERENT SESSION !!!!!
-library(plumber)
-r <- plumb(system.file("plumber/server.R", package = "stars"))
-r$run(port=8000)
+#library(plumber)
+#r <- plumb(system.file("plumber/server.R", package = "stars"))
+#r$run(port=8000)
 
 ## ---- echo = TRUE, eval=FALSE, mysize=TRUE, cache=TRUE, size='\\tiny'----
 source(system.file("plumber/client.R", package = "stars"),,
